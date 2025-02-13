@@ -6,15 +6,15 @@ You are encouraged to support each other with an overall goal of successfully co
 
 You will submit this form at least twice.  Once before the project starts.  This is to document your intention.  Then, again at completion.  This is to document any deviation from the initial plan.  
 
-| Workload                                                          | Total | Partner 1 | Partner 2 |
+| Workload                                                          | Total |    Jay    |    Kyle   |
 |-------------------------------------------------------------------|-------|-----------|-----------|
-|Introduction                                                       | 1     |           |           |
-|Circuit diagram                                                    | 1     |           |           |
-|Main loop flowchart                                                | 1     |           |           |
-|System architecture diagram                                        | 1     |           |           |
-|Professional demo                                                  | 2     |           |           |
-|System starts in a locked state                                    | 0.5   |           |           |
-|Unlock code works and is 4-digits long                             | 4     |           |           |
+|Introduction                                                       | 1     |     1     |           |
+|Circuit diagram                                                    | 1     |           |     1     |
+|Main loop flowchart                                                | 1     |           |     1     |
+|System architecture diagram                                        | 1     |     1     |           |
+|Professional demo                                                  | 2     |     1     |     1     |
+|System starts in a locked state                                    | 0.5   |     1     |           |
+|Unlock code works and is 4-digits long                             | 4     |           |     4     |
 |LED is set to correct color when locked                            | 0.5   |           |           |
 |LED is set to correct color when being unlocked                    | 0.5   |           |           |
 |LED is set to correct color when unlocked                          | 0.5   |           |           |
