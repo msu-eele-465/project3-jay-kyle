@@ -2,6 +2,7 @@
 #include <msp430.h>
 #include <stdbool.h>
 
+
     int i = 0;
     int status = 0;
     int col = 0;
@@ -20,14 +21,16 @@ int main(void)
     PM5CTL0 &= ~LOCKLPM5;
 
 
-    while(true)
+   /* while(true)
     {
         P1OUT^= BIT0;
         for(i=0;    i<0xFFFF; i++);
         {
 
         }
-    }
+    }*/
+    get_key();
+    main();
 }    /*
     check_keypad(status){
         if(status == 0){
@@ -40,10 +43,10 @@ int main(void)
 
 void get_column()
 {
-    int col_1 = (P1IN & BIT6) ? 1 : 0;
-    int col_2 = (P1IN & BIT7) ? 1 : 0;
-    int col_3 = (P2IN & BIT0) ? 1 : 0;
-    int col_4 = (P2IN & BIT1) ? 1 : 0;
+    int col_1 = (P1IN & BIT4) ? 1 : 0;
+    int col_2 = (P1IN & BIT5) ? 1 : 0;
+    int col_3 = (P1IN & BIT6) ? 1 : 0;
+    int col_4 = (P1IN & BIT7) ? 1 : 0;
 
     if (col_1) {
         col = 1;
@@ -69,22 +72,18 @@ void get_column()
 
 void get_key()
 {
-    P3DIR |= BIT6 | BIT7; // Set keypad row pins as outputs
-    P1DIR |= BIT4 | BIT5;
+    P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
 
-    P3DIR &= BIT6 | BIT7; // clears outputs to start
-    P1DIR &= BIT4 | BIT5;
+    P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // clears outputs to start
 
-    // Set column pins as input with pull-down resistors
-    P1DIR &= ~(BIT6 | BIT7); // Set P1.6 and P1.7 as input
-    P1REN |= (BIT6 | BIT7);  // Enable pull-up/down resistors
-    P1OUT &= (BIT6 | BIT7);  // Set as pull-down
 
-    P2DIR &= ~(BIT0 | BIT1); // Set P2.0 and P2.1 as input
-    P2REN |= (BIT0 | BIT1);
-    P2OUT &= (BIT0 | BIT1);
+    // Set column pins as input with pull-down resistor
+    P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set P1.6 and P1.7 as input
+    P1REN |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Enable pull-up/down resistors
+    P1OUT &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set as pull-down
 
-    P3OUT |= BIT6; // Activate first row
+
+    P3OUT |= BIT4; // Activate first row
     get_column();  
 
     switch(col){
@@ -107,9 +106,9 @@ void get_key()
     case 0:
         break;
     }
-    P3OUT &= BIT6;      
+    P3OUT &= ~BIT4;      
 
-    P3OUT |= BIT7; // Activate second row
+    P3OUT |= BIT5; // Activate second row
     get_column();  
         
     switch(col){
@@ -132,10 +131,10 @@ void get_key()
     case 0:
         break;
     }
-    P3OUT &= BIT7; 
+    P3OUT &= ~BIT5; 
 
 
-    P1OUT |= BIT4; // Activate third row
+    P3OUT |= BIT6; // Activate third row
     get_column();  
 
     switch(col){
@@ -158,10 +157,10 @@ void get_key()
     case 0:
         break;
     }
-    P1OUT &= BIT4; 
+    P3OUT &= ~BIT6; 
 
 
-    P1OUT |= BIT5; // Activate forth row
+    P3OUT |= BIT7; // Activate forth row
     get_column();  
 
     switch(col){
@@ -184,8 +183,9 @@ void get_key()
     case 0:
         break;
     }
-    P1OUT &= BIT5; 
-        
+    P3OUT &= ~BIT7; 
+
+
 }
 
 
