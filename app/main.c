@@ -1,45 +1,61 @@
+#include "intrinsics.h"
 #include "msp430fr2355.h"
 #include <msp430.h>
 #include <stdbool.h>
 
 
-    int i = 0;
-    int status = 0;
-    int col = 0;
+    int i = 0;              // heartbeet LED integer
+    int status = 0;         // unlock status of the keypad
+    int col = 0;            // variable that marks what columb of the keypad was pressed
+    char code_char_1 = '5';
+    char code_char_2 = '2';
+    char code_char_3 = '9';
+    char code_char_4 = '3';
+    int key_num = 0;        // this variable tracks ammt of correct nombers pressed in password
+    char patern_sel = '0';  // default patern
+    int period = 4;         // this will correspond to 1 second changing the integer period variable by 1 should change the period by .25 s
+    int key_pad_flag = 0;
+    int key_comp_flag = 0;       // Stops the isr from initializing in the middle of a test
  
-    char key = 'N';        // starts the program at NA until a key gets pressed
+    char key = 'N';         // starts the program at NA until a key gets pressed
 
 int main(void)
 {
     // Stop watchdog timer
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
-    
-    P1DIR   |= BIT0;
+    //--set up ports
+    P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
+    P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // sets output high to start
+
+    // Set column pins as input with pull-down resistor
+    P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set P1.4 - p1.7 as input
+    P1REN |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); // Enable pull-up/down resistors
+    P1OUT &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set as pull-down
+    P1IES &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); //configur IQR sensitivity
+    //P1IES |= BIT4;
+
+    //--- Set Up port 1 IQR
+    P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // clears interrupt flag
+    P1IE  |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);
+    __enable_interrupt();
+
 
     // Disable the GPIO power-on default high-impedance mdoe to activate
     // previously configure port settings
     PM5CTL0 &= ~LOCKLPM5;
 
 
-   /* while(true)
-    {
-        P1OUT^= BIT0;
-        for(i=0;    i<0xFFFF; i++);
-        {
-
+    while(1){
+        //P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
+        //P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // re sets output high so it can do the next cycle
+        if(key_pad_flag == 1){
+            check_keypad();
+            key_pad_flag = 0;
         }
-    }*/
-    get_key();
-    main();
-}    /*
-    check_keypad(status){
-        if(status == 0){
-            if(key = code_int_1){
-                status = 1
-            }
-        }
-    } 
-    */
+    }
+    return 0;
+    
+}    
 
 void get_column()
 {
@@ -72,17 +88,7 @@ void get_column()
 
 void get_key()
 {
-    P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
-
-    P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // clears outputs to start
-
-
-    // Set column pins as input with pull-down resistor
-    P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set P1.6 and P1.7 as input
-    P1REN |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Enable pull-up/down resistors
-    P1OUT &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set as pull-down
-
-
+    P3OUT &= ~(BIT5   |   BIT6   |   BIT7);  // clears outputs to start other than BIT4
     P3OUT |= BIT4; // Activate first row
     get_column();  
 
@@ -188,4 +194,83 @@ void get_key()
 
 }
 
+void check_keypad(){
+    key_comp_flag = 1;                  // process of retreiving the key has started
+        get_key();
+        if(status == 0){                // indicates tahat the keypad is locked
+            if(key == code_char_1){      // correct first key of the code was pressed
+                status = 1;             // keypad in unlocking mode
+                key_num = 1;            // indicates one correct key has been pressed
+            }
+            else{
+                status = 0;             // re locks the keypad if the incorrect key was pressed
+                key_num = 0;
+            }
+        }
+        if(status == 1){                // currently being unclocked
+            switch(key_num){
+            case 1:                     // one correct key has been pressed
+                if(key == code_char_2){
+                    status = 1;
+                    key_num = 2;
+                }
+                else{
+                    status = 0;
+                    key_num = 0;
+                }
+            break;
 
+            case 2:                     // two correct keys have been pressed
+                if(key == code_char_3){
+                    status = 1;
+                    key_num = 3;
+                }
+                else{
+                    status = 0;
+                    key_num = 0;
+                }
+            break;
+
+            case 3:                     // Three correct keys have been pressed
+                if(key == code_char_4){
+                    status = 2;         // keypad is unlocked
+                    key_num = 3;
+                }
+                else{
+                    status = 0;
+                    key_num = 0;
+                }
+            break;
+            }
+
+        }
+        if(status == 2){
+            if(key =='0' || key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '6' || key == '7'){
+                patern_sel = key;
+            }
+            if(key == 'A'){
+                if(period > 1){
+                    period = period - 1;
+                }
+                else{
+                    period = 1;
+                }
+            }
+            if(key == 'B'){
+                period = period + 1;
+            }
+        }
+        P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
+        key_comp_flag = 0;                                  // process of retreiving the key has finished
+    } 
+
+//------Interrupt Service Routines
+#pragma  vector = PORT1_VECTOR
+__interrupt  void ISR_PORT1_kye(void){
+    if(key_comp_flag == 0){
+        key_pad_flag = 1;
+    }
+    P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7);      // clears interrupt flag, could pottentialy set up so 
+                                                            // i could get rid of get column function
+
+}
