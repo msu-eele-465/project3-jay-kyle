@@ -15,7 +15,7 @@
     char patern_sel = '0';  // default patern
     int period = 4;         // this will correspond to 1 second changing the integer period variable by 1 should change the period by .25 s
     int key_pad_flag = 0;
-    int key_comp_flag = 0;       // Stops the isr from initializing in the middle of a test
+
  
     char key = 'N';         // starts the program at NA until a key gets pressed
 
@@ -48,9 +48,11 @@ int main(void)
     while(1){
         //P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
         //P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // re sets output high so it can do the next cycle
+
         if(key_pad_flag == 1){
             check_keypad();
-            key_pad_flag = 0;
+            P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); 
+            key_pad_flag = 0;                                   // stops the ISR from prematurly setting keypad flag
         }
     }
     return 0;
@@ -195,16 +197,21 @@ void get_key()
 }
 
 void check_keypad(){
-    key_comp_flag = 1;                  // process of retreiving the key has started
         get_key();
-        if(status == 0){                // indicates tahat the keypad is locked
-            if(key == code_char_1){      // correct first key of the code was pressed
-                status = 1;             // keypad in unlocking mode
-                key_num = 1;            // indicates one correct key has been pressed
+        if(status == 2){
+            if(key =='0' || key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '6' || key == '7'){
+                patern_sel = key;
             }
-            else{
-                status = 0;             // re locks the keypad if the incorrect key was pressed
-                key_num = 0;
+            if(key == 'A'){
+                if(period > 1){
+                    period = period - 1;
+                }
+                else{
+                    period = 1;
+                }
+            }
+            if(key == 'B'){
+                period = period + 1;
             }
         }
         if(status == 1){                // currently being unclocked
@@ -234,7 +241,7 @@ void check_keypad(){
             case 3:                     // Three correct keys have been pressed
                 if(key == code_char_4){
                     status = 2;         // keypad is unlocked
-                    key_num = 3;
+                    key_num = 4;
                 }
                 else{
                     status = 0;
@@ -244,32 +251,27 @@ void check_keypad(){
             }
 
         }
-        if(status == 2){
-            if(key =='0' || key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '6' || key == '7'){
-                patern_sel = key;
+        if(status == 0){                // indicates tahat the keypad is locked
+            if(key == code_char_1){      // correct first key of the code was pressed
+                status = 1;             // keypad in unlocking mode
+                key_num = 1;            // indicates one correct key has been pressed
             }
-            if(key == 'A'){
-                if(period > 1){
-                    period = period - 1;
-                }
-                else{
-                    period = 1;
-                }
-            }
-            if(key == 'B'){
-                period = period + 1;
+            else{
+                status = 0;             // re locks the keypad if the incorrect key was pressed
+                key_num = 0;
             }
         }
+        
+
         P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
-        key_comp_flag = 0;                                  // process of retreiving the key has finished
+        for(i=0; i<0x00FF; i++){}                           // stops a split second high from keypad 
+                               
     } 
 
 //------Interrupt Service Routines
 #pragma  vector = PORT1_VECTOR
 __interrupt  void ISR_PORT1_kye(void){
-    if(key_comp_flag == 0){
-        key_pad_flag = 1;
-    }
+    key_pad_flag = 1;
     P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7);      // clears interrupt flag, could pottentialy set up so 
                                                             // i could get rid of get column function
 
