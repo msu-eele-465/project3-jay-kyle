@@ -272,6 +272,7 @@ void check_keypad(){
 #pragma  vector = PORT1_VECTOR
 __interrupt  void ISR_PORT1_kye(void){
     key_pad_flag = 1;
+    for(i=0; i<0x00FF; i++){}                               // mollify button bounce
     P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7);      // clears interrupt flag, could pottentialy set up so 
                                                             // i could get rid of get column function
 
