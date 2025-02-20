@@ -5,7 +5,7 @@
 int unlocked = 0;
 int unlocking = 1;
 int locked = 2;
-int status = locked;
+int status = -1;
 int pattern = -1;
 int pattern1 = 0;                       
 int pattern2 = 0;                           
@@ -35,7 +35,7 @@ void init(void) {
 
     // Configure Timer B3
     TB3CTL |= (TBSSEL__SMCLK | MC__UP | TBCLR);  // Use SMCLK, up mode, clear
-    TB3CCR0 = 4080;                              // Set PWM period (adjust for desired frequency)
+    TB3CCR0 = 16320;                              // Set PWM period (adjust for desired frequency)
 
     // Enable and clear interrupts for each color channel
     TB0CCTL0 |= CCIE;                            // Interrupt for pattern transistions
@@ -57,7 +57,7 @@ int main(void)
     init();
 
     while(1) {
-        status = 0;
+        status = unlocking;
         update_rgb_led(status);
     }
 }
@@ -70,20 +70,20 @@ void update_leds(int status, int pattern) {
 void update_rgb_led(int status) {
 
     if (status == unlocked) {                
-        set_rgb_led_pwm(196,62,29);     // red
+        set_rgb_led_pwm(254,1,1);     // red
     } else if (status == unlocking) {         
-        set_rgb_led_pwm(196,146,29);    // orange
+        set_rgb_led_pwm(254,25,1);    // orange
     } else if (status == locked) {        
-        set_rgb_led_pwm(29,162,196);    // blue
+        set_rgb_led_pwm(1,1,254);    // blue
     } else {
         set_rgb_led_pwm(0,0,0);         // shut off rgb led
     }
 }
 
 void set_rgb_led_pwm(int red, int green, int blue) {
-    TB3CCR1 = red*16;   // Red brightness
-    TB3CCR2 = green*16; // Green brightness
-    TB3CCR3 = blue*16;  // Blue brightness
+    TB3CCR1 = red*64;   // Red brightness
+    TB3CCR2 = green*64; // Green brightness
+    TB3CCR3 = blue*64;  // Blue brightness
 }
 
 void update_led_bar(int status, int pattern) {
@@ -170,17 +170,17 @@ __interrupt void RGB_Period_ISR(void) {
 #pragma vector = TIMER3_B1_VECTOR
 __interrupt void RGB_Duty_ISR(void) {
     switch (TB3IV) {
-        case 2:  // TB3CCR1 - Red
+        case 0x02:  // TB3CCR1 - Red
             P2OUT &= ~BIT0; // Turn OFF Red
             TB3CCTL1 &= ~CCIFG; 
             break;
-        case 4:  // TB3CCR2 - Green
+        case 0x04:  // TB3CCR2 - Green
             P2OUT &= ~BIT1; // Turn OFF Green
             TB3CCTL2 &= ~CCIFG;
             break;
-        case 6:  // TB3CCR3 - Blue
+        case 0x06:  // TB3CCR3 - Blue
             P2OUT &= ~BIT2; // Turn OFF Blue
             TB3CCTL3 &= ~CCIFG;
-            break;
+            break;        
     }
-}
+}   
