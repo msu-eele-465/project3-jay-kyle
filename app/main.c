@@ -12,6 +12,9 @@ void init(void) {
     // Disable High Z mode
     PM5CTL0 &= ~LOCKLPM5;
 
+    // Enable interrupts
+    __enable_interrupt();
+
     // Set P2.0 (red), P2.1 (green), P2.2 (blue) as Timer B PWM Outputs
     P2DIR |= (BIT0 | BIT1 | BIT2);  
     P2OUT |= (BIT0 | BIT1 | BIT2); 
