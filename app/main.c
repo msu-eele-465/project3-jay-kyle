@@ -2,6 +2,8 @@
 #include <msp430.h>
 #include <stdbool.h>
 
+int status;
+
 void init(void) {
 
     // Stop watchdog timer
@@ -9,6 +11,10 @@ void init(void) {
     
     // Disable High Z mode
     PM5CTL0 &= ~LOCKLPM5;
+
+    // Set P2.0 (red), P2.1 (green), P2.2 (blue) as Timer B PWM Outputs
+    P2DIR |= (BIT0 | BIT1 | BIT2);  
+    P2OUT |= (BIT0 | BIT1 | BIT2); 
 
     // Configure Timer B0
     TB3CTL = TBSSEL__SMCLK | MC__UP | TBCLR;    // Use SMCLK, up mode, clear
@@ -30,32 +36,31 @@ int main(void)
     init();
 
     while(1) {
-        update_rgb_led();
+        status = 0;
+        update_rgb_led(status);
     }
+}
 
-    return 0;
+void update_rgb_led(int status) {
+
+    if (status == 0) {                  // unlocked
+        set_rgb_led_pwm(196,62,29);     // red
+    }
+    else if (status == 1) {             // unlocking
+        set_rgb_led_pwm(196,146,29);    // orange
+    }
+    else if (status == 2) {             // locked
+        set_rgb_led_pwm(29,162,196);    // blue
+    }
+    else {
+        perror('Invalid Status');
+    }
 }
 
 void set_rgb_led_pwm(int red, int green, int blue) {
     TB3CCR1 = red*16;   // Red brightness
     TB3CCR2 = green*16; // Green brightness
     TB3CCR3 = blue*16;  // Blue brightness
-}
-
-void update_rgb_led() {
-
-    //set_rgb_led_pwm(196,62,29);
-    set_rgb_led_pwm(196,146,29);
-
-    //if (status == 0) {                  // unlocked
-    //    set_rgb_led_pwm(196,62,29);     // red
-    //}
-    //else if (status == 1) {             // unlocking
-    //    set_rgb_led_pwm(196,146,29);    // orange
-    //}
-    //else {                              // locked
-    //    set_rgb_led_pwm(29,162,196);    // blue
-    //}
 }
 
 #pragma vector = TIMER3_B0_VECTOR
