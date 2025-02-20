@@ -15,6 +15,9 @@
     char patern_sel = '0';  // default patern
     int period = 4;         // this will correspond to 1 second changing the integer period variable by 1 should change the period by .25 s
     int key_pad_flag = 0;
+    int int_en = 0;         //stops intterupt from flagging after inputs go high
+    int pressed = 0;
+    
 
  
     char key = 'N';         // starts the program at NA until a key gets pressed
@@ -31,13 +34,13 @@ int main(void)
     P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set P1.4 - p1.7 as input
     P1REN |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); // Enable pull-up/down resistors
     P1OUT &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set as pull-down
-    P1IES &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); //configur IQR sensitivity
+ //   P1IES &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); //configur IQR sensitivity
     //P1IES |= BIT4;
 
     //--- Set Up port 1 IQR
-    P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // clears interrupt flag
-    P1IE  |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);
-    __enable_interrupt();
+//    P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // clears interrupt flag
+//    P1IE  |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);
+//    __enable_interrupt();
 
 
     // Disable the GPIO power-on default high-impedance mdoe to activate
@@ -46,9 +49,14 @@ int main(void)
 
 
     while(1){
-        //P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
-        //P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // re sets output high so it can do the next cycle
-
+        pressed = (P1IN & 0b11110000);
+        if (pressed > 1 && int_en == 0){
+            key_pad_flag = 1;
+            int_en = 1;
+        }
+        if (pressed == 0){
+            int_en = 0;
+        }
         if(key_pad_flag == 1){
             check_keypad();
             P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); 
@@ -66,19 +74,19 @@ void get_column()
     int col_3 = (P1IN & BIT6) ? 1 : 0;
     int col_4 = (P1IN & BIT7) ? 1 : 0;
 
-    if (col_1) {
+    if (col_1 == 1) {
         col = 1;
     } 
     
-    else if (col_2) {
+    else if (col_2 == 1) {
         col = 2;
     }
 
-    else if (col_3) {
+    else if (col_3 == 1) {
         col = 3;
     } 
 
-    else if (col_4) {
+    else if (col_4 == 1) {
         col = 4;
     } 
     
@@ -213,6 +221,9 @@ void check_keypad(){
             if(key == 'B'){
                 period = period + 1;
             }
+            if(key == 'D'){
+                status = 0; 
+            }
         }
         if(status == 1){                // currently being unclocked
             switch(key_num){
@@ -262,18 +273,21 @@ void check_keypad(){
             }
         }
         
-
-        P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
-        for(i=0; i<0x00FF; i++){}                           // stops a split second high from keypad 
-                               
+        P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // sets output high to start
+        key_pad_flag == 0;
     } 
 
+
+/*
 //------Interrupt Service Routines
 #pragma  vector = PORT1_VECTOR
-__interrupt  void ISR_PORT1_kye(void){
-    key_pad_flag = 1;
-    for(i=0; i<0x00FF; i++){}                               // mollify button bounce
+__interrupt  void ISR_PORT1_key(void){
+    if(int_en == 1){
+        key_pad_flag = 1; 
+
+    }                       
     P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7);      // clears interrupt flag, could pottentialy set up so 
                                                             // i could get rid of get column function
 
 }
+*/
