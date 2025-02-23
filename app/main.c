@@ -27,13 +27,13 @@ int main(void)
     // Stop watchdog timer
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
     //--set up ports
-    P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
-    P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // sets output high to start
+    P1DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // Set keypad row pins as outputs
+    P1OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // sets output high to start
 
     // Set column pins as input with pull-down resistor
-    P1DIR &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set P1.4 - p1.7 as input
-    P1REN |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); // Enable pull-up/down resistors
-    P1OUT &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // Set as pull-down
+    P2DIR &= ~(BIT0   |   BIT1   |   BIT2   |   BIT3); // Set P1.4 - p1.7 as input
+    P2REN |=  (BIT0   |   BIT1   |   BIT2   |   BIT3); // Enable pull-up/down resistors
+    P2OUT &= ~(BIT0   |   BIT1   |   BIT2   |   BIT3); // Set as pull-down
  //   P1IES &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); //configur IQR sensitivity
     //P1IES |= BIT4;
 
@@ -49,8 +49,8 @@ int main(void)
 
 
     while(1){
-        pressed = (P1IN & 0b11110000);
-        if (pressed > 1 && int_en == 0){
+        pressed = (P2IN & 0b00001111);
+        if (pressed > 0 && int_en == 0){
             key_pad_flag = 1;
             int_en = 1;
         }
@@ -59,7 +59,7 @@ int main(void)
         }
         if(key_pad_flag == 1){
             check_keypad();
-            P3DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); 
+            P1DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); 
             key_pad_flag = 0;                                   // stops the ISR from prematurly setting keypad flag
         }
     }
@@ -69,10 +69,10 @@ int main(void)
 
 void get_column()
 {
-    int col_1 = (P1IN & BIT4) ? 1 : 0;
-    int col_2 = (P1IN & BIT5) ? 1 : 0;
-    int col_3 = (P1IN & BIT6) ? 1 : 0;
-    int col_4 = (P1IN & BIT7) ? 1 : 0;
+    int col_1 = (P2IN & BIT0) ? 1 : 0;
+    int col_2 = (P2IN & BIT1) ? 1 : 0;
+    int col_3 = (P2IN & BIT2) ? 1 : 0;
+    int col_4 = (P2IN & BIT3) ? 1 : 0;
 
     if (col_1 == 1) {
         col = 1;
@@ -98,8 +98,8 @@ void get_column()
 
 void get_key()
 {
-    P3OUT &= ~(BIT5   |   BIT6   |   BIT7);  // clears outputs to start other than BIT4
-    P3OUT |= BIT4; // Activate first row
+    P1OUT &= ~(BIT5   |   BIT6   |   BIT7);  // clears outputs to start other than BIT4
+    P1OUT |= BIT4; // Activate first row
     get_column();  
 
     switch(col){
@@ -122,9 +122,9 @@ void get_key()
     case 0:
         break;
     }
-    P3OUT &= ~BIT4;      
+    P1OUT &= ~BIT4;      
 
-    P3OUT |= BIT5; // Activate second row
+    P1OUT |= BIT5; // Activate second row
     get_column();  
         
     switch(col){
@@ -147,10 +147,10 @@ void get_key()
     case 0:
         break;
     }
-    P3OUT &= ~BIT5; 
+    P1OUT &= ~BIT5; 
 
 
-    P3OUT |= BIT6; // Activate third row
+    P1OUT |= BIT6; // Activate third row
     get_column();  
 
     switch(col){
@@ -173,10 +173,10 @@ void get_key()
     case 0:
         break;
     }
-    P3OUT &= ~BIT6; 
+    P1OUT &= ~BIT6; 
 
 
-    P3OUT |= BIT7; // Activate forth row
+    P1OUT |= BIT7; // Activate forth row
     get_column();  
 
     switch(col){
@@ -199,7 +199,7 @@ void get_key()
     case 0:
         break;
     }
-    P3OUT &= ~BIT7; 
+    P1OUT &= ~BIT7; 
 
 
 }
@@ -273,7 +273,7 @@ void check_keypad(){
             }
         }
         
-        P3OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // sets output high to start
+        P1OUT |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);  // sets output high to start
         key_pad_flag == 0;
     } 
 
