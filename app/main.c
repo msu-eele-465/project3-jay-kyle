@@ -22,9 +22,9 @@ int key_pad_flag = 0;
 int int_en = 0;         //stops intterupt from flagging after inputs go high
 int pressed = 0;
 
-char pattern = '-1';     // default patern
-char current_pattern = '-2';   
-char next_pattern = '-3';    
+char pattern = 'N';     // default patern
+char current_pattern = 'C';   
+char next_pattern = 'K';    
 int pattern1 = 0;                       
 int pattern2 = 0;                           
 int pattern3 = 0;
@@ -358,12 +358,12 @@ void update_rgb_led(int status, char pattern) {
         } else if (pattern == '7') {
             set_rgb_led_pwm(35,200,150);              // unknown
         } else {
-            set_rgb_led_pwm(1,1,254);     // red
+            set_rgb_led_pwm(1,1,254);     // blue
         }
     } else if (status == unlocking) {         
         set_rgb_led_pwm(254,25,1);    // orange
     } else if (status == locked) {        
-        set_rgb_led_pwm(254,1,1);    // blue
+        set_rgb_led_pwm(254,1,1);    // red
     } else {
         set_rgb_led_pwm(0,0,0);         // shut off rgb led
     }
