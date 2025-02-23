@@ -77,24 +77,25 @@ void update_leds(int status, int pattern) {
 void update_rgb_led(int status, int pattern) {
 
     if (status == unlocked) {                
-        set_rgb_led_pwm(254,1,1);     // red
         if (pattern == 0) {
-            //set_rgb_led_pwm();
+            set_rgb_led_pwm(1,254,1);   // green
         } else if (pattern == 1) {
-            //set_rgb_led_pwm();
+            set_rgb_led_pwm(75,1,130);  // purple
         } else if (pattern == 2) {
-            //set_rgb_led_pwm();
+            set_rgb_led_pwm(254,50,254);  // pink
         } else if (pattern == 3) {
-            //set_rgb_led_pwm();
+            set_rgb_led_pwm(254,254,254);  // white
         } else if (pattern == 4) {
-            //set_rgb_led_pwm(); 
+            set_rgb_led_pwm(150,75,1);     // yellow    
         } else if (pattern == 5) {
-            //set_rgb_led_pwm();
+            set_rgb_led_pwm(10,50,1);              // unknown
         } else if (pattern == 6) {
-            //set_rgb_led_pwm();
+            set_rgb_led_pwm(200,150,35);              // unknown
         } else if (pattern == 7) {
-            //set_rgb_led_pwm();
-        } 
+            set_rgb_led_pwm(35,200,150);              // unknown
+        } else {
+            set_rgb_led_pwm(254,1,1);     // red
+        }
     } else if (status == unlocking) {         
         set_rgb_led_pwm(254,25,1);    // orange
     } else if (status == locked) {        
