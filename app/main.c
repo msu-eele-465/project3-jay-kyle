@@ -382,20 +382,19 @@ void update_led_bar(int status, char pattern) {
 
         if (next_pattern == current_pattern) {
             if (pattern == '1') {
-                pattern1 = 0b10101010;
+                pattern1 = 0b01010101;
             } else if (pattern == '2') {
-                pattern2 = 0b00000000;
+                pattern2 = 0b11111111;
             } else if (pattern == '3') {
-                pattern3 = 0b00011000;
                 pattern3_step = 0;
             } else if (pattern == '4') {
-                pattern4 = 0b11111111;
+                pattern4 = 0b00000000;
             } else if (pattern == '5') {
-                pattern5 = 0b00000001;
+                pattern5 = 0b10000000;
             } else if (pattern == '6') {
-                pattern6 = 0b01111111;
+                pattern6 = 0b11111110;
             } else if (pattern == '7') {
-                pattern7 = 0b00000001;
+                pattern7 = 0b11111111;
             }
         }
         current_pattern = next_pattern;
