@@ -6,7 +6,7 @@
 int i = 0;              // heartbeet LED integer
 int j = 1;
 
-int status = 0;         // unlock status of the keypad
+int status = 0;         // status of the keypad
 int unlocked = 2;       
 int unlocking = 1;
 int locked = 0;
@@ -103,6 +103,7 @@ int main(void)
     init_rgb_led();
     init_led_bar();
     init_keypad();
+    udpate_rgb_led(status, pattern);        // start up RGB led 
 
     while(1){
         pressed = (P2IN & 0b00001111);
