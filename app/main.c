@@ -35,15 +35,15 @@ float base_transition_scalar = 1.0;
 
 #define LED_BAR P3OUT
 
-    char key = 'N';         // starts the program at NA until a key gets pressed
+char key = 'N';         // starts the program at NA until a key gets pressed
 
 void init_rgb_led(void) {
     WDTCTL = WDTPW | WDTHOLD;                    // Stop watchdog timer           
     PM5CTL0 &= ~LOCKLPM5;                        // Disable High Z mode
 
     // Set P2.0 (red), P2.1 (green), P2.2 (blue) as outputs for RGB led
-    P2DIR |= (BIT0 | BIT1 | BIT2);  
-    P2OUT &= ~(BIT0 | BIT1 | BIT2); 
+    P6DIR |= (BIT0 | BIT1 | BIT2);  
+    P6OUT &= ~(BIT0 | BIT1 | BIT2); 
 
     // Configure Timer B3
     TB3CTL |= (TBSSEL__SMCLK | MC__UP | TBCLR);  // Use SMCLK, up mode, clear
@@ -67,8 +67,8 @@ void init_led_bar(void) {
     PM5CTL0 &= ~LOCKLPM5;                        // Disable High Z mode
 
     // Set P1.0-P1.7 as outputs for led bar
-    P5DIR |= 0b11111111; 
-    P5OUT |= 0b00000000;  
+    P3DIR |= 0b11111111; 
+    P3OUT |= 0b00000000;  
 
     // Configure Timer B0
     TB0CTL |= (TBSSEL__ACLK | MC__UP | TBCLR); // Use ACLK, up mode, clear
@@ -93,18 +93,6 @@ void init_keypad(void) {
     P2DIR &= ~(BIT0   |   BIT1   |   BIT2   |   BIT3); // Set P1.4 - p1.7 as input
     P2REN |=  (BIT0   |   BIT1   |   BIT2   |   BIT3); // Enable pull-up/down resistors
     P2OUT &= ~(BIT0   |   BIT1   |   BIT2   |   BIT3); // Set as pull-down
- //   P1IES &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); //configur IQR sensitivity
-    //P1IES |= BIT4;
-
-    //--- Set Up port 1 IQR
-//    P1IFG &= ~(BIT4   |   BIT5   |   BIT6   |   BIT7); // clears interrupt flag
-//    P1IE  |=  (BIT4   |   BIT5   |   BIT6   |   BIT7);
-//    __enable_interrupt();
-
-
-    // Disable the GPIO power-on default high-impedance mdoe to activate
-    // previously configure port settings
-    PM5CTL0 &= ~LOCKLPM5;
 }
 
 int main(void)
@@ -124,6 +112,7 @@ int main(void)
         }
         if(key_pad_flag == 1){
             check_keypad();
+            update_leds(status, pattern);
             P1DIR |=  (BIT4   |   BIT5   |   BIT6   |   BIT7); 
             key_pad_flag = 0;                                   // stops the ISR from prematurly setting keypad flag
         }
@@ -158,7 +147,6 @@ void get_column()
         col = 0;  // No key pressed
     }
 }
-
 
 void get_key()
 {
@@ -286,40 +274,40 @@ void check_keypad(){
                 period = period + 1;
             }
             if(key == 'D'){
-                status = 0; 
+                status = locked; 
             }
         }
         if(status == 1){                // currently being unclocked
             switch(key_num){
             case 1:                     // one correct key has been pressed
                 if(key == code_char_2){
-                    status = 1;
+                    status = unlocking;
                     key_num = 2;
                 }
                 else{
-                    status = 0;
+                    status = locked;
                     key_num = 0;
                 }
             break;
 
             case 2:                     // two correct keys have been pressed
                 if(key == code_char_3){
-                    status = 1;
+                    status = unlocking;
                     key_num = 3;
                 }
                 else{
-                    status = 0;
+                    status = locked;
                     key_num = 0;
                 }
             break;
 
             case 3:                     // Three correct keys have been pressed
                 if(key == code_char_4){
-                    status = 2;         // keypad is unlocked
+                    status = unlocked;         // keypad is unlocked
                     key_num = 4;
                 }
                 else{
-                    status = 0;
+                    status = locked;
                     key_num = 0;
                 }
             break;
@@ -328,11 +316,11 @@ void check_keypad(){
         }
         if(status == 0){                // indicates tahat the keypad is locked
             if(key == code_char_1){      // correct first key of the code was pressed
-                status = 1;             // keypad in unlocking mode
+                status = unlocking;             // keypad in unlocking mode
                 key_num = 1;            // indicates one correct key has been pressed
             }
             else{
-                status = 0;             // re locks the keypad if the incorrect key was pressed
+                status = locked;             // re locks the keypad if the incorrect key was pressed
                 key_num = 0;
             }
         }
@@ -475,7 +463,7 @@ __interrupt void Pattern_Transition_ISR(void) {
 
 #pragma vector = TIMER3_B0_VECTOR
 __interrupt void RGB_Period_ISR(void) {
-    P2OUT |= (BIT0 | BIT1 | BIT2);  // Turn ON all LEDs at start of period
+    P6OUT |= (BIT0 | BIT1 | BIT2);  // Turn ON all LEDs at start of period
     TB3CCTL0 &= ~CCIFG;             // Clear interrupt flag
 }
 
@@ -483,15 +471,15 @@ __interrupt void RGB_Period_ISR(void) {
 __interrupt void RGB_Duty_ISR(void) {
     switch (TB3IV) {
         case 0x02:  // TB3CCR1 - Red
-            P2OUT &= ~BIT0; // Turn OFF Red
+            P6OUT &= ~BIT0; // Turn OFF Red
             TB3CCTL1 &= ~CCIFG; 
             break;
         case 0x04:  // TB3CCR2 - Green
-            P2OUT &= ~BIT1; // Turn OFF Green
+            P6OUT &= ~BIT1; // Turn OFF Green
             TB3CCTL2 &= ~CCIFG;
             break;
         case 0x06:  // TB3CCR3 - Blue
-            P2OUT &= ~BIT2; // Turn OFF Blue
+            P6OUT &= ~BIT2; // Turn OFF Blue
             TB3CCTL3 &= ~CCIFG;
             break;        
     }
