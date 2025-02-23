@@ -30,7 +30,10 @@ int pattern2 = 0;
 int pattern3 = 0;
 int pattern4 = 0;
 int pattern5 = 0;
+int pattern6 = 0;
+int pattern7 = 0;
 int pattern3_step = 0;
+int pattern6_step = 0;
 float base_transition_scalar = 1.0;        
 
 #define LED_BAR P3OUT
@@ -388,6 +391,10 @@ void update_led_bar(int status, char pattern) {
                 pattern4 = 0b11111111;
             } else if (pattern == '5') {
                 pattern5 = 0b00000001;
+            } else if (pattern == '6') {
+                pattern6 = 0b01111111;
+            } else if (pattern == '7') {
+                pattern7 = 0b00000001;
             }
         }
         current_pattern = next_pattern;
@@ -453,7 +460,17 @@ __interrupt void Pattern_Transition_ISR(void) {
                 pattern5 = 0b00000001;
             }
             LED_BAR = pattern5;
-        } 
+        } else if (pattern == '6') {
+            base_transition_scalar = 0.5;
+        } else if (pattern == '7') {
+            base_transition_scalar = 1.0;
+            if (pattern7 != 0b11111111) {
+                pattern7 = pattern7 * 2 + 1;       
+            } else {
+                pattern7 = 0b00000001;
+            }
+            LED_BAR = pattern7;
+        }
         TB0CCR0 = (int)(base_transition_scalar * 32768);
     } else {
         LED_BAR = 0b00000000;
