@@ -103,7 +103,7 @@ int main(void)
     init_rgb_led();
     init_led_bar();
     init_keypad();
-    udpate_rgb_led(status, pattern);        // start up RGB led 
+    update_rgb_led(status, pattern);        // start up RGB led 
 
     while(1){
         pressed = (P2IN & 0b00001111);
