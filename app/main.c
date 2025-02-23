@@ -262,7 +262,7 @@ void get_key()
 
 void check_keypad(){
         get_key();
-        if(status == 2){
+        if(status == unlocked){
             if(key =='0' || key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '6' || key == '7'){
                 pattern = key;
             }
@@ -279,9 +279,11 @@ void check_keypad(){
             }
             if(key == 'D'){
                 status = locked; 
+                pattern = 'N';
+                period = 4;
             }
         }
-        if(status == 1){                // currently being unclocked
+        if(status == unlocking){                // currently being unclocked
             switch(key_num){
             case 1:                     // one correct key has been pressed
                 if(key == code_char_2){
@@ -318,7 +320,7 @@ void check_keypad(){
             }
 
         }
-        if(status == 0){                // indicates tahat the keypad is locked
+        if(status == locked){                // indicates tahat the keypad is locked
             if(key == code_char_1){      // correct first key of the code was pressed
                 status = unlocking;             // keypad in unlocking mode
                 key_num = 1;            // indicates one correct key has been pressed
@@ -326,6 +328,7 @@ void check_keypad(){
             else{
                 status = locked;             // re locks the keypad if the incorrect key was pressed
                 key_num = 0;
+                pattern = 'N';
             }
         }
         
@@ -446,19 +449,19 @@ __interrupt void Pattern_Transition_ISR(void) {
             LED_BAR = pattern3;
         } else if (pattern == '4') {
             base_transition_scalar = 0.25;
-            if (pattern4 != 0b00000000) {
-                pattern4 = pattern4 - 1;
-            } else {
+            if (pattern4 == 0b00000000) {
                 pattern4 = 0b11111111;
+            } else {
+                pattern4 = pattern4 - 1;
             }
             LED_BAR = pattern4;
         } else if (pattern == '5') {
             base_transition_scalar = 1.5;
-            if (pattern5 != 0b10000000) {
-                pattern5 = pattern5 * 2;       
-            } else {
+            if (pattern5 == 0 || pattern5 == 0b10000000) {
                 pattern5 = 0b00000001;
-            }
+            } else {
+                pattern5 = pattern5 * 2;       
+            } 
             LED_BAR = pattern5;
         } else if (pattern == '6') {
             base_transition_scalar = 0.5;
@@ -471,7 +474,7 @@ __interrupt void Pattern_Transition_ISR(void) {
             }
             LED_BAR = pattern7;
         }
-        TB0CCR0 = (int)(base_transition_scalar * 32768);
+        TB0CCR0 = (int)(base_transition_scalar * 8192 * period);
     } else {
         LED_BAR = 0b00000000;
     }
