@@ -371,7 +371,7 @@ void set_rgb_led_pwm(int red, int green, int blue) {
     TB3CCR3 = blue*64;  // Blue brightness
 }
 
-void update_led_bar(int status, _MSVC_EXECUTION_CHARACTER_SET pattern) {
+void update_led_bar(int status, char pattern) {
 
     if (status == unlocked) {                   
         next_pattern = pattern;
@@ -448,7 +448,7 @@ __interrupt void Pattern_Transition_ISR(void) {
         } else if (pattern == '5') {
             base_transition_scalar = 1.5;
             if (pattern5 != 0b10000000) {
-                pattern5 = pattern5 << 1;       // FIX ME: Shift left operation
+                pattern5 = pattern5 * 2;       
             } else {
                 pattern5 = 0b00000001;
             }
