@@ -10,12 +10,15 @@ int pattern = -1;
 int pattern1 = 0;                       
 int pattern2 = 0;                           
 int pattern3 = 0;
+int pattern4 = 0;
+int pattern5 = 0;
 int pattern3_step = 0;
 int current_pattern = -1;   
 int next_pattern = -1;                        
-float base_transition_scalar = 1.0;             
+float base_transition_scalar = 1.0;        
+int i = 1;
 
-#define LED_BAR P1OUT
+#define LED_BAR P5OUT
 
 void init(void) {
     WDTCTL = WDTPW | WDTHOLD;                    // Stop watchdog timer           
@@ -26,8 +29,8 @@ void init(void) {
     P2OUT &= ~(BIT0 | BIT1 | BIT2); 
 
     // Set P1.0-P1.7 as outputs for led bar
-    P1DIR |= 0b11111111; 
-    P1OUT |= 0b00000000;  
+    P5DIR |= 0b11111111; 
+    P5OUT |= 0b00000000;  
 
     // Configure Timer B0
     TB0CTL |= (TBSSEL__ACLK | MC__UP | TBCLR); // Use ACLK, up mode, clear
@@ -57,20 +60,41 @@ int main(void)
     init();
 
     while(1) {
-        status = unlocking;
-        update_rgb_led(status);
+        status = unlocked;
+        pattern = 5;
+        if (i == 1) {
+            update_leds(status, pattern);
+        }
+        i = 2;
     }
 }
 
 void update_leds(int status, int pattern) {
-    update_rgb_led(status);
+    update_rgb_led(status, pattern);
     update_led_bar(status, pattern);
 }
 
-void update_rgb_led(int status) {
+void update_rgb_led(int status, int pattern) {
 
     if (status == unlocked) {                
         set_rgb_led_pwm(254,1,1);     // red
+        if (pattern == 0) {
+            //set_rgb_led_pwm();
+        } else if (pattern == 1) {
+            //set_rgb_led_pwm();
+        } else if (pattern == 2) {
+            //set_rgb_led_pwm();
+        } else if (pattern == 3) {
+            //set_rgb_led_pwm();
+        } else if (pattern == 4) {
+            //set_rgb_led_pwm(); 
+        } else if (pattern == 5) {
+            //set_rgb_led_pwm();
+        } else if (pattern == 6) {
+            //set_rgb_led_pwm();
+        } else if (pattern == 7) {
+            //set_rgb_led_pwm();
+        } 
     } else if (status == unlocking) {         
         set_rgb_led_pwm(254,25,1);    // orange
     } else if (status == locked) {        
@@ -99,43 +123,39 @@ void update_led_bar(int status, int pattern) {
             } else if (pattern == 3) {
                 pattern3 = 0b00011000;
                 pattern3_step = 0;
+            } else if (pattern == 4) {
+                pattern4 = 0b11111111;
+            } else if (pattern == 5) {
+                pattern5 = 0b00000001;
             }
-        }
-
-        if (pattern == 0) {                 // static    
-            LED_BAR = 0b10101010;
-        } else if (pattern == 1) {          // toggle      
-            base_transition_scalar = 1.0;   
-            LED_BAR = pattern1;
-        } else if (pattern == 2) {          // up counter            
-            base_transition_scalar = 0.5;
-            LED_BAR = pattern2;
-        } else if (pattern == 3) {          // in and out    
-            base_transition_scalar = 0.5;
-            LED_BAR = pattern3;
         }
         current_pattern = next_pattern;
     }
-
-    TB0CCR0 = (int)(base_transition_scalar * 32768);
 }
 
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void Pattern_Transition_ISR(void) {
     if (status == unlocked) {
-        if (pattern == 1) {
-            if (pattern1 == 0b01010101) {
-                pattern1 = 0b10101010;        
+        if (pattern == 0) {
+            LED_BAR = 0b10101010;
+        } else if (pattern == 1) {
+            base_transition_scalar = 1.0;
+            if (pattern1 == 0b01010101) { 
+                pattern1 = 0b10101010;       
             } else {
                 pattern1 = 0b01010101;
             }
+            LED_BAR = pattern1;
         } else if (pattern == 2) {
+            base_transition_scalar = 0.5;
             if (pattern2 != 0b11111111) {
-                pattern2 = pattern2 + 0b00000001;
+                pattern2 = pattern2 + 1;
             } else {
                 pattern2 = 0b00000000;
             }
+            LED_BAR = pattern2;
         } else if (pattern == 3) {
+            base_transition_scalar = 0.5;
             if (pattern3_step == 0) {
                 pattern3 = 0b00100100;
                 pattern3_step = 1;
@@ -155,8 +175,27 @@ __interrupt void Pattern_Transition_ISR(void) {
                 pattern3 = 0b00011000;
                 pattern3_step = 0;
             }
-        }
-        update_led_bar(status, pattern);
+            LED_BAR = pattern3;
+        } else if (pattern == 4) {
+            base_transition_scalar = 0.25;
+            if (pattern4 != 0b00000000) {
+                pattern4 = pattern4 - 1;
+            } else {
+                pattern4 = 0b11111111;
+            }
+            LED_BAR = pattern4;
+        } else if (pattern == 5) {
+            base_transition_scalar = 1.5;
+            if (pattern5 != 0b10000000) {
+                pattern5 = pattern5 << 1;       // FIX ME: Shift left operation
+            } else {
+                pattern5 = 0b00000001;
+            }
+            LED_BAR = pattern5;
+        } 
+        TB0CCR0 = (int)(base_transition_scalar * 32768);
+    } else {
+        LED_BAR = 0b00000000;
     }
     TB0CCTL0 &= ~ CCIFG;            // Clear interrupt flag
 }
