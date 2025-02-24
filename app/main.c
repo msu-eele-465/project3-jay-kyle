@@ -108,7 +108,6 @@ int main(void)
     update_rgb_led(status, pattern);        // start up RGB led 
 
     while(1){
-        update_rgb_led(status, pattern);
         pressed = (P2IN & 0b00001111);
         if (pressed > 0 && int_en == 0){
             key_pad_flag = 1;
@@ -400,7 +399,7 @@ void update_led_bar(int status, char pattern) {
             } else if (pattern == '3') {
                 pattern3_step = 0;
             } else if (pattern == '4') {
-                pattern4 = 0b00000000;
+                pattern4 = 0b00000000;      
             } else if (pattern == '5') {
                 pattern5 = 0b10000000;
             } else if (pattern == '6') {
@@ -428,6 +427,7 @@ __interrupt void Pattern_Transition_ISR(void) {
         else{
             status = locked;
             unlocking_flag = 0;
+            set_rgb_led_pwm(254,1,1);
 
         }
 
