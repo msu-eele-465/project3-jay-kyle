@@ -22,7 +22,7 @@ int key_pad_flag = 0;
 int int_en = 0;         //stops intterupt from flagging after inputs go high
 int pressed = 0;
 
-char pattern = 'N';     // default patern
+char pattern = '8';     // default patern
 char current_pattern = 'C';   
 char next_pattern = 'K';    
 int pattern1 = 0;                       
@@ -490,7 +490,7 @@ __interrupt void Pattern_Transition_ISR(void) {
                 pattern6 = 0b11111110;
                 pattern6_step = 0;
             }
-            LED_BAR = pattern3;
+            LED_BAR = pattern6;
         } else if (pattern == '7') {
             base_transition_scalar = 1.0;
             if (pattern7 != 0b11111111) {
