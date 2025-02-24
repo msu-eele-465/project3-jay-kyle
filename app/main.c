@@ -364,7 +364,7 @@ void update_rgb_led(int status, char pattern) {
             set_rgb_led_pwm(1,1,254);     // blue
         }
     } else if (status == unlocking) {         
-        set_rgb_led_pwm(254,25,1);    // orange
+        set_rgb_led_pwm(254,20,1);    // orange
     } else if (status == locked) {        
         set_rgb_led_pwm(254,1,1);    // red
     } else {
