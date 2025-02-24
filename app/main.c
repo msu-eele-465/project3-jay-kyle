@@ -395,7 +395,7 @@ void update_led_bar(int status, char pattern) {
             } else if (pattern == '5') {
                 pattern5 = 0b10000000;
             } else if (pattern == '6') {
-                pattern6 = 0b11111110;
+                pattern6_step = 0;
             } else if (pattern == '7') {
                 pattern7 = 0b11111111;
             }
@@ -428,22 +428,22 @@ __interrupt void Pattern_Transition_ISR(void) {
         } else if (pattern == '3') {
             base_transition_scalar = 0.5;
             if (pattern3_step == 0) {
-                pattern3 = 0b00100100;
+                pattern3 = 0b00011000;
                 pattern3_step = 1;
             } else if (pattern3_step == 1) {
-                pattern3 = 0b01000010;
+                pattern3 = 0b00100100;
                 pattern3_step = 2;
             } else if (pattern3_step == 2) {
-                pattern3 = 0b10000001;
+                pattern3 = 0b01000010;
                 pattern3_step = 3;
             } else if (pattern3_step == 3) {
-                pattern3 = 0b01000010;
+                pattern3 = 0b10000001;
                 pattern3_step = 4;
             } else if (pattern3_step == 4) {
-                pattern3 = 0b00100100;
+                pattern3 = 0b01000010;
                 pattern3_step = 5;
             } else if (pattern3_step == 5) {
-                pattern3 = 0b00011000;
+                pattern3 = 0b00100100;
                 pattern3_step = 0;
             }
             LED_BAR = pattern3;
@@ -465,6 +465,32 @@ __interrupt void Pattern_Transition_ISR(void) {
             LED_BAR = pattern5;
         } else if (pattern == '6') {
             base_transition_scalar = 0.5;
+            if (pattern6_step == 0) {
+                pattern6 = 0b01111111;
+                pattern6_step = 1;
+            } else if (pattern6_step == 1) {
+                pattern6 = 0b10111111;
+                pattern6_step = 2;
+            } else if (pattern6_step == 2) {
+                pattern6 = 0b11011111;
+                pattern6_step = 3;
+            } else if (pattern6_step == 3) {
+                pattern6 = 0b11101111;
+                pattern6_step = 4;
+            } else if (pattern6_step == 4) {
+                pattern6 = 0b11110111;
+                pattern6_step = 5;
+            } else if (pattern6_step == 5) {
+                pattern6 = 0b11111011;
+                pattern6_step = 6;
+            } else if (pattern6_step == 6) {
+                pattern6 = 0b11111101;
+                pattern6_step = 7;
+            } else if (pattern6_step == 7) {
+                pattern6 = 0b11111110;
+                pattern6_step = 0;
+            }
+            LED_BAR = pattern3;
         } else if (pattern == '7') {
             base_transition_scalar = 1.0;
             if (pattern7 != 0b11111111) {
