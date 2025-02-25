@@ -21,8 +21,10 @@ int period = 4;         // this will correspond to 1 second changing the integer
 int key_pad_flag = 0;
 int int_en = 0;         //stops intterupt from flagging after inputs go high
 int pressed = 0;
+int unlocking_flag = 0;
+int five_sec = 5;
 
-char pattern = 'N';     // default patern
+char pattern = '8';     // default patern
 char current_pattern = 'C';   
 char next_pattern = 'K';    
 int pattern1 = 0;                       
@@ -69,7 +71,7 @@ void init_led_bar(void) {
     WDTCTL = WDTPW | WDTHOLD;                    // Stop watchdog timer           
     PM5CTL0 &= ~LOCKLPM5;                        // Disable High Z mode
 
-    // Set P1.0-P1.7 as outputs for led bar
+    // Set P3.0-P3.7 as outputs for led bar
     P3DIR |= 0b11111111; 
     P3OUT |= 0b00000000;  
 
@@ -281,6 +283,8 @@ void check_keypad(){
                 status = locked; 
                 pattern = 'N';
                 period = 4;
+                five_sec = 5;
+                unlocking_flag = 0;
             }
         }
         if(status == unlocking){                // currently being unclocked
@@ -293,6 +297,7 @@ void check_keypad(){
                 else{
                     status = locked;
                     key_num = 0;
+                    unlocking_flag = 0;
                 }
             break;
 
@@ -304,6 +309,7 @@ void check_keypad(){
                 else{
                     status = locked;
                     key_num = 0;
+                    unlocking_flag = 0;
                 }
             break;
 
@@ -311,10 +317,12 @@ void check_keypad(){
                 if(key == code_char_4){
                     status = unlocked;         // keypad is unlocked
                     key_num = 4;
+                    unlocking_flag = 0;
                 }
                 else{
                     status = locked;
                     key_num = 0;
+                    unlocking_flag = 0;
                 }
             break;
             }
@@ -347,19 +355,19 @@ void update_rgb_led(int status, char pattern) {
         if (pattern == '0') {
             set_rgb_led_pwm(1,254,1);   // green
         } else if (pattern == '1') {
-            set_rgb_led_pwm(75,1,130);  // purple
+            set_rgb_led_pwm(130,1,254);  // purple
         } else if (pattern == '2') {
-            set_rgb_led_pwm(254,50,254);  // pink
+            set_rgb_led_pwm(254,10,130);  // pink
         } else if (pattern == '3') {
-            set_rgb_led_pwm(254,254,254);  // white
+            set_rgb_led_pwm(230,90,254);  // white
         } else if (pattern == '4') {
-            set_rgb_led_pwm(150,75,1);     // yellow    
+            set_rgb_led_pwm(110,75,1);     // yellow    
         } else if (pattern == '5') {
-            set_rgb_led_pwm(10,50,1);              // unknown
+            set_rgb_led_pwm(50,4,254);              // light blue
         } else if (pattern == '6') {
-            set_rgb_led_pwm(200,150,35);              // unknown
+            set_rgb_led_pwm(254,20,35);              // orange-pink
         } else if (pattern == '7') {
-            set_rgb_led_pwm(35,200,150);              // unknown
+            set_rgb_led_pwm(35,200,150);              // aqua
         } else {
             set_rgb_led_pwm(1,1,254);     // blue
         }
@@ -383,29 +391,50 @@ void update_led_bar(int status, char pattern) {
     if (status == unlocked) {                   
         next_pattern = pattern;
 
-        if (next_pattern == current_pattern) {
-            if (pattern == '1') {
-                pattern1 = 0b01010101;
-            } else if (pattern == '2') {
-                pattern2 = 0b11111111;
-            } else if (pattern == '3') {
-                pattern3_step = 0;
-            } else if (pattern == '4') {
-                pattern4 = 0b00000000;
-            } else if (pattern == '5') {
-                pattern5 = 0b10000000;
-            } else if (pattern == '6') {
-                pattern6_step = 0;
-            } else if (pattern == '7') {
-                pattern7 = 0b11111111;
+        if (key != 'B' && key != 'A'){
+            if (next_pattern == current_pattern) {
+                if (pattern == '1') {
+                    pattern1 = 0b01010101;
+                } else if (pattern == '2') {
+                    pattern2 = 0b11111111;
+                } else if (pattern == '3') {
+                    pattern3_step = 0;
+                } else if (pattern == '4') {
+                    pattern4 = 0b00000000;      
+                } else if (pattern == '5') {
+                    pattern5 = 0b10000000;
+                } else if (pattern == '6') {
+                    pattern6_step = 0;
+                } else if (pattern == '7') {
+                    pattern7 = 0b11111111;
+                }
             }
-        }
         current_pattern = next_pattern;
+        }
     }
 }
 
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void Pattern_Transition_ISR(void) {
+    if (status == unlocking){                       // ensures that the system is unlocked in under 5 seconds
+        if(key_num == 1 && unlocking_flag == 0){
+            TB0CCR0 = 32768;                        // stops the unlocking time being less after period was spead up
+            base_transition_scalar = 1.0;
+            unlocking_flag = 1;
+            five_sec = 5;
+        }
+        if( five_sec > 0){
+            five_sec = five_sec -1;
+        }
+        else{
+            status = locked;
+            unlocking_flag = 0;
+            set_rgb_led_pwm(254,1,1);
+
+        }
+
+
+    }
     if (status == unlocked) {
         if (pattern == '0') {
             LED_BAR = 0b10101010;
@@ -490,7 +519,7 @@ __interrupt void Pattern_Transition_ISR(void) {
                 pattern6 = 0b11111110;
                 pattern6_step = 0;
             }
-            LED_BAR = pattern3;
+            LED_BAR = pattern6;
         } else if (pattern == '7') {
             base_transition_scalar = 1.0;
             if (pattern7 != 0b11111111) {
