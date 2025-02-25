@@ -1,11 +1,24 @@
-# Project 3 Workload Distribution Form---2 Partners
+# Project 3 - Demo
 
-Starting with Project 03, you will need to assign the responsibility of certain functionality to each student on the team.  It is recommended that at least some of the functionality is a shared responsibility between two or more members of the team, whereas some of the functionality is assigned solely to an individual.  That said, how you break up the project is entirely up to you, so long as the workload distribution (measured in points as defined below) is approximately balanced.
+## Team Members
+Jay Graham, Kyle Stopplecamp
 
-You are encouraged to support each other with an overall goal of successfully completing the project.  If one person struggles with their responsibility, the other member is encouraged to step in.  However, an agreement should be struck between the partners wherein one partner gives up some of the assigned points for that function relative to the amount of help received.  
+## Introduction
+This project involves using an MSP430 microcontroller to interface with a 16-button keypad, an LED bar, and an RGB LED to create a user-controlled LED pattern display. The system requires users to enter a four-digit unlock code via the keypad to access and select LED patterns, with an RGB LED serving as a status indicator. 
 
-You will submit this form at least twice.  Once before the project starts.  This is to document your intention.  Then, again at completion.  This is to document any deviation from the initial plan.  
+### High-Level Flowcharts
+![High-Level Flowcharts](project3_flowchart.png)
 
+### Circuit Diagram
+![Circuit Diagram](project3_circuit_diagram.png)
+
+### Software Architecture
+![Software Architecture](project3_architecture.png)
+
+## DEMO
+Done with TA on 2/25/25
+
+## Review of Results
 | Workload                                                          | Total |    Jay    |    Kyle   |
 |-------------------------------------------------------------------|-------|-----------|-----------|
 |Introduction                                                       | 1     |     1     |     0     |
